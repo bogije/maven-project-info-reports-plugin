@@ -39,7 +39,9 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.report.projectinfo.dependencies.Dependencies;
 import org.apache.maven.report.projectinfo.dependencies.DependenciesReportConfiguration;
 import org.apache.maven.report.projectinfo.dependencies.RepositoryUtils;
@@ -145,6 +147,7 @@ public class DependenciesReport
      */
     @Parameter( property = "dependency.locations.enabled", defaultValue = "true" )
     private boolean dependencyLocationsEnabled;
+    
 
     // ----------------------------------------------------------------------
     // Public methods
@@ -227,8 +230,12 @@ public class DependenciesReport
     {
         try
         {
+            ProjectBuildingRequest buildingRequest =
+                new DefaultProjectBuildingRequest( getSession().getProjectBuildingRequest() );
+            buildingRequest.setProject( getProject() );
+            
             ArtifactFilter artifactFilter = new ScopeArtifactFilter( Artifact.SCOPE_TEST );
-            return dependencyGraphBuilder.buildDependencyGraph( project, artifactFilter );
+            return dependencyGraphBuilder.buildDependencyGraph( buildingRequest, artifactFilter );
         }
         catch ( DependencyGraphBuilderException e )
         {

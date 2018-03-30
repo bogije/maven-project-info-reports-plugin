@@ -49,6 +49,7 @@ import org.apache.maven.doxia.siterenderer.SiteRenderingContext;
 import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
 import org.apache.maven.doxia.tools.SiteTool;
 import org.apache.maven.doxia.tools.SiteToolException;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -138,6 +139,9 @@ public abstract class AbstractProjectInfoReport
      */
     @Parameter( defaultValue = "${project}", readonly = true, required = true )
     protected MavenProject project;
+    
+    @Parameter( defaultValue = "${session}", readonly = true, required = true )
+    private MavenSession session;
 
     /**
      * Local Repository.
@@ -319,6 +323,11 @@ public abstract class AbstractProjectInfoReport
     protected MavenProject getProject()
     {
         return project;
+    }
+    
+    protected MavenSession getSession()
+    {
+        return session;
     }
 
     /**

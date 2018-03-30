@@ -22,6 +22,7 @@ package org.apache.maven.report.projectinfo;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.report.projectinfo.stubs.SubProject1Stub;
@@ -32,8 +33,6 @@ import com.meterware.httpunit.TextBlock;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * @author ltheussl

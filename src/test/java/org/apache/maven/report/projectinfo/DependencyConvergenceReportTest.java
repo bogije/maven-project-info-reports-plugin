@@ -48,6 +48,8 @@ public class DependencyConvergenceReportTest
     public void testReport()
         throws Exception
     {
+        getArtifactStubFactory().createArtifact( "junit", "junit", "3.8.1" );
+
         generateReport( "dependency-convergence", "dependency-convergence-plugin-config.xml" );
         assertTrue( "Test html generated", getGeneratedReport( "dependency-convergence.html" ).exists() );
 
