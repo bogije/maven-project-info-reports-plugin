@@ -27,7 +27,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataRetrievalException;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -45,6 +44,7 @@ import org.apache.maven.report.projectinfo.AbstractProjectInfoRenderer;
 import org.apache.maven.report.projectinfo.ProjectInfoReportUtils;
 import org.apache.maven.report.projectinfo.dependencies.ManagementDependencies;
 import org.apache.maven.report.projectinfo.dependencies.RepositoryUtils;
+import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.i18n.I18N;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -62,7 +62,7 @@ public class DependencyManagementRenderer
 
     private final ArtifactMetadataSource artifactMetadataSource;
 
-    private final ArtifactFactory artifactFactory;
+    private final RepositorySystem repositorySystem;
 
     private final ProjectBuilder projectBuilder;
 
@@ -79,7 +79,7 @@ public class DependencyManagementRenderer
      * @param log {@link Log}
      * @param dependencies {@link ManagementDependencies}
      * @param artifactMetadataSource {@link ArtifactMetadataSource}
-     * @param artifactFactory {@link ArtifactFactory}
+     * @param repositorySystem {@link RepositorySystem}
      * @param projectBuilder {@link ProjectBuilder}
      * @param remoteRepositories {@link ArtifactRepository}
      * @param localRepository {@link ArtifactRepository}
@@ -88,7 +88,7 @@ public class DependencyManagementRenderer
     public DependencyManagementRenderer( Sink sink, Locale locale, I18N i18n, Log log,
                                          ManagementDependencies dependencies,
                                          ArtifactMetadataSource artifactMetadataSource,
-                                         ArtifactFactory artifactFactory, ProjectBuilder projectBuilder,
+                                         RepositorySystem repositorySystem, ProjectBuilder projectBuilder,
                                          ProjectBuildingRequest buildingRequest, RepositoryUtils repoUtils )
     {
         super( sink, i18n, locale );
@@ -96,7 +96,7 @@ public class DependencyManagementRenderer
         this.log = log;
         this.dependencies = dependencies;
         this.artifactMetadataSource = artifactMetadataSource;
-        this.artifactFactory = artifactFactory;
+        this.repositorySystem = repositorySystem;
         this.projectBuilder = projectBuilder;
         this.buildingRequest = buildingRequest;
         this.repoUtils = repoUtils;
@@ -212,9 +212,8 @@ public class DependencyManagementRenderer
     @SuppressWarnings( "unchecked" )
     private String[] getDependencyRow( Dependency dependency, boolean hasClassifier )
     {
-        Artifact artifact =
-            artifactFactory.createProjectArtifact( dependency.getGroupId(), dependency.getArtifactId(),
-                                                   dependency.getVersion() );
+        Artifact artifact = repositorySystem.createProjectArtifact( dependency.getGroupId(), dependency.getArtifactId(),
+                                                                    dependency.getVersion() );
 
         StringBuilder licensesBuffer = new StringBuilder();
         String url = null;
@@ -250,7 +249,7 @@ public class DependencyManagementRenderer
                 }
             }
 
-            url = ProjectInfoReportUtils.getArtifactUrl( artifactFactory, artifact, projectBuilder, buildingRequest );
+            url = ProjectInfoReportUtils.getArtifactUrl( repositorySystem, artifact, projectBuilder, buildingRequest );
 
             MavenProject artifactProject = repoUtils.getMavenProjectFromRepository( artifact );
 

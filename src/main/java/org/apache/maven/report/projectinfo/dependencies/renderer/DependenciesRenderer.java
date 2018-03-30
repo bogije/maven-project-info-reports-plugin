@@ -42,7 +42,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.doxia.sink.Sink;
@@ -60,6 +59,7 @@ import org.apache.maven.report.projectinfo.ProjectInfoReportUtils;
 import org.apache.maven.report.projectinfo.dependencies.Dependencies;
 import org.apache.maven.report.projectinfo.dependencies.DependenciesReportConfiguration;
 import org.apache.maven.report.projectinfo.dependencies.RepositoryUtils;
+import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
@@ -132,7 +132,7 @@ public class DependenciesRenderer
         }
     };
 
-    private final ArtifactFactory artifactFactory;
+    private final RepositorySystem repositorySystem;
 
     private final ProjectBuilder projectBuilder;
 
@@ -163,14 +163,14 @@ public class DependenciesRenderer
      * @param dependencyTreeNode {@link DependencyNode}
      * @param config {@link DependenciesReportConfiguration}
      * @param repoUtils {@link RepositoryUtils}
-     * @param artifactFactory {@link ArtifactFactory}
+     * @param repositorySystem {@link RepositorySystem}
      * @param projectBuilder {@link ProjectBuilder}
      * @param buildingRequest {@link ProjectBuildingRequest}
      */
     public DependenciesRenderer( Sink sink, Locale locale, I18N i18n, Log log, Settings settings,
                                  Dependencies dependencies, DependencyNode dependencyTreeNode,
                                  DependenciesReportConfiguration config, RepositoryUtils repoUtils,
-                                 ArtifactFactory artifactFactory, ProjectBuilder projectBuilder,
+                                 RepositorySystem repositorySystem, ProjectBuilder projectBuilder,
                                  ProjectBuildingRequest buildingRequest )
     {
         super( sink, i18n, locale );
@@ -181,7 +181,7 @@ public class DependenciesRenderer
         this.dependencyNode = dependencyTreeNode;
         this.repoUtils = repoUtils;
         this.configuration = config;
-        this.artifactFactory = artifactFactory;
+        this.repositorySystem = repositorySystem;
         this.projectBuilder = projectBuilder;
         this.buildingRequest = buildingRequest; 
 
@@ -776,7 +776,6 @@ public class DependenciesRenderer
         }
     }
 
-    @SuppressWarnings( "unchecked" )
     private void renderSectionDependencyRepositoryLocations()
     {
         startSection( getI18nString( "repo.locations.title" ) );
@@ -888,7 +887,7 @@ public class DependenciesRenderer
             artifact.isOptional() ? getI18nString( "column.isOptional" ) : getI18nString( "column.isNotOptional" );
 
         String url =
-            ProjectInfoReportUtils.getArtifactUrl( artifactFactory, artifact, projectBuilder, buildingRequest );
+            ProjectInfoReportUtils.getArtifactUrl( repositorySystem, artifact, projectBuilder, buildingRequest );
         String artifactIdCell = ProjectInfoReportUtils.getArtifactIdCell( artifact.getArtifactId(), url );
 
         MavenProject artifactProject;
@@ -990,7 +989,7 @@ public class DependenciesRenderer
                 String artifactDescription = artifactProject.getDescription();
                 String artifactUrl = artifactProject.getUrl();
                 String artifactName = artifactProject.getName();
-                @SuppressWarnings( "unchecked" )
+
                 List<License> licenses = artifactProject.getLicenses();
 
                 sink.tableRow();

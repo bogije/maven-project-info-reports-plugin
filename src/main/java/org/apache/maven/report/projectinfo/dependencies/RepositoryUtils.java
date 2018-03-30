@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadata;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.metadata.Metadata;
@@ -41,6 +40,7 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnector;
 import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorException;
 import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorFactory;
+import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.shared.artifact.resolve.ArtifactResult;
@@ -64,7 +64,7 @@ public class RepositoryUtils
 
     private final ProjectBuilder projectBuilder;
 
-    private final ArtifactFactory factory;
+    private final RepositorySystem repositorySystem;
 
     private final List<ArtifactRepository> remoteRepositories;
 
@@ -77,7 +77,7 @@ public class RepositoryUtils
     /**
      * @param log {@link Log}
      * @param projectBuilder {@link ProjectBuilder}
-     * @param factory {@link ArtifactFactory}
+     * @param repositorySystem {@link RepositorySystem}
      * @param resolver {@link ArtifactResolver}
      * @param remoteRepositories {@link ArtifactRepository}
      * @param pluginRepositories {@link ArtifactRepository}
@@ -86,7 +86,7 @@ public class RepositoryUtils
      * @param wagonManager {@link WagonManager}
      */
     public RepositoryUtils( Log log, WagonRepositoryConnectorFactory wagonRepositoryConnectorFactory,
-                            ProjectBuilder projectBuilder, ArtifactFactory factory, ArtifactResolver resolver,
+                            ProjectBuilder projectBuilder, RepositorySystem repositorySystem, ArtifactResolver resolver,
                             List<ArtifactRepository> remoteRepositories, List<ArtifactRepository> pluginRepositories,
                             ProjectBuildingRequest buildingRequest,
                             RepositoryMetadataManager repositoryMetadataManager )
@@ -94,7 +94,7 @@ public class RepositoryUtils
         this.log = log;
         this.wagonRepositoryConnectorFactory = wagonRepositoryConnectorFactory;
         this.projectBuilder = projectBuilder;
-        this.factory = factory;
+        this.repositorySystem = repositorySystem;
         this.resolver = resolver;
         this.remoteRepositories = remoteRepositories;
         this.pluginRepositories = pluginRepositories;
@@ -227,8 +227,9 @@ public class RepositoryUtils
         boolean allowStubModel = false;
         if ( !"pom".equals( artifact.getType() ) )
         {
-            projectArtifact = factory.createProjectArtifact( artifact.getGroupId(), artifact.getArtifactId(),
-                                                             artifact.getVersion(), artifact.getScope() );
+            projectArtifact = repositorySystem.createProjectArtifact( artifact.getGroupId(), 
+                                                                      artifact.getArtifactId(),
+                                                                      artifact.getVersion() );
             allowStubModel = true;
         }
 

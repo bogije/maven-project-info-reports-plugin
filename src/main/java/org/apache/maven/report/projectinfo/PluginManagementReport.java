@@ -20,7 +20,6 @@ package org.apache.maven.report.projectinfo;
  */
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.model.Plugin;
@@ -34,6 +33,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.i18n.I18N;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -63,12 +63,6 @@ public class PluginManagementReport
     @Component
     private ProjectBuilder projectBuilder;
 
-    /**
-     * Maven Artifact Factory component.
-     */
-    @Component
-    private ArtifactFactory artifactFactory;
-
     // ----------------------------------------------------------------------
     // Public methods
     // ----------------------------------------------------------------------
@@ -79,7 +73,7 @@ public class PluginManagementReport
         PluginManagementRenderer r =
             new PluginManagementRenderer( getLog(), getSink(), locale, getI18N( locale ),
                                           project.getPluginManagement().getPlugins(), project, projectBuilder,
-                                          artifactFactory, getSession().getProjectBuildingRequest() );
+                                          repositorySystem, getSession().getProjectBuildingRequest() );
         r.render();
     }
 
@@ -128,7 +122,7 @@ public class PluginManagementReport
 
         private final ProjectBuilder projectBuilder;
 
-        private final ArtifactFactory artifactFactory;
+        private final RepositorySystem repositorySystem;
 
         private final ProjectBuildingRequest buildingRequest;
 
@@ -140,12 +134,12 @@ public class PluginManagementReport
          * @param plugins {@link Plugin}
          * @param project {@link MavenProject}
          * @param projectBuilder {@link ProjectBuilder}
-         * @param artifactFactory {@link ArtifactFactory}
+         * @param repositorySystem {@link RepositorySystem}
          * @param buildingRequest {@link ArtifactRepository}
          */
         public PluginManagementRenderer( Log log, Sink sink, Locale locale, I18N i18n, List<Plugin> plugins,
                                          MavenProject project, ProjectBuilder projectBuilder,
-                                         ArtifactFactory artifactFactory, ProjectBuildingRequest buildingRequest )
+                                         RepositorySystem repositorySystem, ProjectBuildingRequest buildingRequest )
         {
             super( sink, i18n, locale );
 
@@ -157,7 +151,7 @@ public class PluginManagementReport
 
             this.projectBuilder = projectBuilder;
 
-            this.artifactFactory = artifactFactory;
+            this.repositorySystem = repositorySystem;
 
             this.buildingRequest = buildingRequest;
         }
@@ -216,7 +210,7 @@ public class PluginManagementReport
                     versionRange = VersionRange.createFromVersion( plugin.getVersion() );
                 }
 
-                Artifact pluginArtifact = artifactFactory.createParentArtifact( plugin.getGroupId(), plugin
+                Artifact pluginArtifact = repositorySystem.createProjectArtifact( plugin.getGroupId(), plugin
                     .getArtifactId(), versionRange.toString() );
 
                 try

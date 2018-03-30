@@ -30,7 +30,6 @@ import java.io.OutputStream;
 import java.util.Locale;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.metadata.RepositoryMetadataManager;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
@@ -117,14 +116,6 @@ public class DependenciesReport
     @Component
     private RepositoryMetadataManager repositoryMetadataManager;
 
-    /**
-     * Maven Artifact Factory component.
-     *
-     * @since 2.1
-     */
-    @Component
-    private ArtifactFactory artifactFactory;
-
     // ----------------------------------------------------------------------
     // Mojo parameters
     // ----------------------------------------------------------------------
@@ -191,7 +182,7 @@ public class DependenciesReport
         buildingRequest.setRemoteRepositories( remoteRepositories );
 
         RepositoryUtils repoUtils =
-            new RepositoryUtils( getLog(), wagonRepositoryConnectorFactory, projectBuilder, factory, resolver,
+            new RepositoryUtils( getLog(), wagonRepositoryConnectorFactory, projectBuilder, repositorySystem, resolver,
                                  project.getRemoteArtifactRepositories(), project.getPluginArtifactRepositories(),
                                  buildingRequest, repositoryMetadataManager );
 
@@ -204,7 +195,7 @@ public class DependenciesReport
 
         DependenciesRenderer r =
             new DependenciesRenderer( getSink(), locale, getI18N( locale ), getLog(), settings, dependencies,
-                                      dependencyNode, config, repoUtils, artifactFactory, projectBuilder,
+                                      dependencyNode, config, repoUtils, repositorySystem, projectBuilder,
                                       buildingRequest );
         r.render();
     }

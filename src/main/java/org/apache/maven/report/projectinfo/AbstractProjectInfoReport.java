@@ -37,7 +37,6 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.doxia.site.decoration.Body;
 import org.apache.maven.doxia.site.decoration.DecorationModel;
@@ -57,6 +56,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
+import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
 import org.codehaus.plexus.i18n.I18N;
@@ -107,7 +107,7 @@ public abstract class AbstractProjectInfoReport
      * Artifact Factory component.
      */
     @Component
-    protected ArtifactFactory factory;
+    RepositorySystem repositorySystem;
 
     /**
      * Internationalization component, could support also custom bundle using {@link #customBundle}.

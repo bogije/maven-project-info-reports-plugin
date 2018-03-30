@@ -33,9 +33,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
-import org.apache.maven.artifact.resolver.ArtifactCollector;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributeSet;
@@ -98,28 +95,9 @@ public class DependencyConvergenceReport
      * Dependency tree builder, will use it to build dependency tree.
      */
     @Component
-    DependencyGraphBuilder dependencyGraphBuilder;
+    private DependencyGraphBuilder dependencyGraphBuilder;
 
-    /**
-     * Use it to build dependency(artifact) tree
-     */
-    @Component
-    ArtifactFactory factory;
-
-    /**
-     * Use it to get artifact metadata source for dependency tree building.
-     */
-    @Component
-    ArtifactMetadataSource metadataSource;
-
-    /**
-     * Artifact collector - takes a set of original artifacts and resolves all of the best versions to use along with
-     * their metadata.
-     */
-    @Component
-    ArtifactCollector collector;
-
-    ArtifactFilter filter = null;
+    private ArtifactFilter filter = null;
 
     private Map<MavenProject, DependencyNode> projectMap = new HashMap<MavenProject, DependencyNode>();
 

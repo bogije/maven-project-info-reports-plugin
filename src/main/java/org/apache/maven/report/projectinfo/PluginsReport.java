@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.doxia.sink.Sink;
@@ -41,6 +40,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.i18n.I18N;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -69,7 +69,7 @@ public class PluginsReport
      * Maven Artifact Factory component.
      */
     @Component
-    private ArtifactFactory artifactFactory;
+    private RepositorySystem repositorySystem;
 
     // ----------------------------------------------------------------------
     // Public methods
@@ -92,7 +92,7 @@ public class PluginsReport
     {
         PluginsRenderer r =
             new PluginsRenderer( getLog(), getSink(), locale, getI18N( locale ), project.getBuildPlugins(),
-                                 project.getReportPlugins(), project, projectBuilder, artifactFactory,
+                                 project.getReportPlugins(), project, projectBuilder, repositorySystem,
                                  getSession().getProjectBuildingRequest() );
         r.render();
     }
@@ -129,7 +129,7 @@ public class PluginsReport
 
         private final ProjectBuilder projectBuilder;
 
-        private final ArtifactFactory artifactFactory;
+        private final RepositorySystem repositorySystem;
 
         private final ProjectBuildingRequest buildingRequest;
 
@@ -142,13 +142,13 @@ public class PluginsReport
          * @param reports {@link Artifact}
          * @param project {@link MavenProject}
          * @param projectBuilder {@link ProjectBuilder}
-         * @param artifactFactory {@link ArtifactFactory}
+         * @param repositorySystem {@link RepositorySystem}
          * @param localRepository {@link ArtifactRepository}
          *
          */
         public PluginsRenderer( Log log, Sink sink, Locale locale, I18N i18n, List<Plugin> plugins,
                                 List<ReportPlugin> reports, MavenProject project,
-                                ProjectBuilder projectBuilder, ArtifactFactory artifactFactory,
+                                ProjectBuilder projectBuilder, RepositorySystem repositorySystem,
                                 ProjectBuildingRequest buildingRequest )
         {
             super( sink, i18n, locale );
@@ -163,7 +163,7 @@ public class PluginsReport
 
             this.projectBuilder = projectBuilder;
 
-            this.artifactFactory = artifactFactory;
+            this.repositorySystem = repositorySystem;
 
             this.buildingRequest = buildingRequest;
         }
@@ -191,6 +191,7 @@ public class PluginsReport
         private void renderSectionPlugins( boolean isPlugins )
         {
             List<GAV> list = isPlugins ? GAV.pluginsToGAV( plugins ) : GAV.reportPluginsToGAV( reports, project );
+            
             String[] tableHeader = getPluginTableHeader();
 
             startSection( getI18nString( isPlugins ? "build.title" : "report.title" ) );
@@ -221,8 +222,9 @@ public class PluginsReport
             {
                 VersionRange versionRange = VersionRange.createFromVersion( plugin.getVersion() );
 
+                
                 Artifact pluginArtifact =
-                    artifactFactory.createParentArtifact( plugin.getGroupId(), plugin.getArtifactId(),
+                                repositorySystem.createProjectArtifact( plugin.getGroupId(), plugin.getArtifactId(),
                                                           versionRange.toString() );
                 try
                 {

@@ -44,14 +44,11 @@ import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
-import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
-// CHECKSTYLE_OFF: UnusedImports
-import org.apache.maven.reporting.AbstractMavenReportRenderer;
-// CHECKSTYLE_ON: UnusedImports
+import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
@@ -216,11 +213,8 @@ public class ProjectInfoReportUtils
      * @param buildingRequest not null
      * @return the artifact url or null if an error occurred.
      */
-    // CHECKSTYLE_OFF: LineLength
-    public static String getArtifactUrl( ArtifactFactory factory, Artifact artifact,
-                                         ProjectBuilder projectBuilder,
-                                         ProjectBuildingRequest buildingRequest )
-    // CHECKSTYLE_ON: LineLength
+    public static String getArtifactUrl( RepositorySystem repositorySystem, Artifact artifact,
+                                         ProjectBuilder projectBuilder, ProjectBuildingRequest buildingRequest )
     {
         if ( Artifact.SCOPE_SYSTEM.equals( artifact.getScope() ) )
         {
@@ -231,8 +225,8 @@ public class ProjectInfoReportUtils
         if ( !"pom".equals( copyArtifact.getType() ) )
         {
             copyArtifact =
-                factory.createProjectArtifact( copyArtifact.getGroupId(), copyArtifact.getArtifactId(),
-                                               copyArtifact.getVersion(), copyArtifact.getScope() );
+                repositorySystem.createProjectArtifact( copyArtifact.getGroupId(), copyArtifact.getArtifactId(),
+                                                        copyArtifact.getVersion() );
         }
         try
         {
@@ -255,7 +249,7 @@ public class ProjectInfoReportUtils
      * @param artifactId not null
      * @param link could be null
      * @return the artifactId cell with or without a link pattern
-     * @see AbstractMavenReportRenderer#linkPatternedText(String)
+     * @see {@link org.apache.maven.reporting.AbstractMavenReportRenderer#linkPatternedText(String)}
      */
     public static String getArtifactIdCell( String artifactId, String link )
     {

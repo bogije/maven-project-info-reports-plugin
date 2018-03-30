@@ -135,8 +135,6 @@ public class TeamReport
 
         private final Model model;
 
-        private final Log log;
-
         private final boolean showAvatarImages;
 
         private final String protocol;
@@ -146,7 +144,6 @@ public class TeamReport
             super( sink, i18n, locale );
 
             this.model = model;
-            this.log = log;
             this.showAvatarImages = showAvatarImages;
 
             // prepare protocol for gravatar
