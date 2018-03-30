@@ -1,5 +1,7 @@
 package org.apache.maven.report.projectinfo;
 
+import java.io.File;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,6 +22,8 @@ package org.apache.maven.report.projectinfo;
  */
 
 import java.net.URL;
+
+import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.TextBlock;
@@ -72,5 +76,18 @@ public class DependencyConvergenceReportTest
         // Test the texts
         TextBlock[] textBlocks = response.getTextBlocks();
         assertEquals( getString( "report.dependency-convergence.reactor.name" ), textBlocks[0].getText() );
+    }
+    
+    @Override
+    protected AbstractProjectInfoReport createReportMojo( String goal, File pluginXmlFile )
+        throws Exception
+    {
+        AbstractProjectInfoReport mojo = super.createReportMojo( goal, pluginXmlFile );
+
+        // Test is confused because org.eclipse.aether.artifact.Artifact is also on the classpath
+        DependencyGraphBuilder dependencyGraphBuilder = lookup( DependencyGraphBuilder.class, "maven3" );
+        setVariableValueToObject( mojo, "dependencyGraphBuilder", dependencyGraphBuilder );
+        
+        return mojo;
     }
 }

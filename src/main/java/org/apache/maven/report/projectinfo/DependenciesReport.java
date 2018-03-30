@@ -31,7 +31,6 @@ import java.util.Locale;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.metadata.RepositoryMetadataManager;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
@@ -47,6 +46,7 @@ import org.apache.maven.report.projectinfo.dependencies.Dependencies;
 import org.apache.maven.report.projectinfo.dependencies.DependenciesReportConfiguration;
 import org.apache.maven.report.projectinfo.dependencies.RepositoryUtils;
 import org.apache.maven.report.projectinfo.dependencies.renderer.DependenciesRenderer;
+import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorFactory;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
 import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
@@ -88,12 +88,10 @@ public class DependenciesReport
     protected ArtifactMetadataSource artifactMetadataSource;
 
     /**
-     * Wagon manager component.
-     *
-     * @since 2.1
+     * @since 3.0.0
      */
     @Component
-    private WagonManager wagonManager;
+    private WagonRepositoryConnectorFactory wagonRepositoryConnectorFactory;
 
     /**
      * Dependency graph builder component.
@@ -193,7 +191,7 @@ public class DependenciesReport
         buildingRequest.setRemoteRepositories( remoteRepositories );
 
         RepositoryUtils repoUtils =
-            new RepositoryUtils( getLog(), wagonManager, settings, projectBuilder, factory, resolver,
+            new RepositoryUtils( getLog(), wagonRepositoryConnectorFactory, projectBuilder, factory, resolver,
                                  project.getRemoteArtifactRepositories(), project.getPluginArtifactRepositories(),
                                  buildingRequest, repositoryMetadataManager );
 

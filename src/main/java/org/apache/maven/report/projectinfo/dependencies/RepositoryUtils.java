@@ -26,7 +26,6 @@ import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.metadata.ArtifactMetadata;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.metadata.Metadata;
@@ -39,22 +38,14 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.repository.legacy.WagonConfigurationException;
-import org.apache.maven.settings.Proxy;
-import org.apache.maven.settings.Settings;
+import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnector;
+import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorException;
+import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorFactory;
 import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.shared.artifact.resolve.ArtifactResult;
-import org.apache.maven.wagon.ConnectionException;
 import org.apache.maven.wagon.TransferFailedException;
-import org.apache.maven.wagon.UnsupportedProtocolException;
-import org.apache.maven.wagon.Wagon;
-import org.apache.maven.wagon.authentication.AuthenticationException;
-import org.apache.maven.wagon.authentication.AuthenticationInfo;
 import org.apache.maven.wagon.authorization.AuthorizationException;
-import org.apache.maven.wagon.observers.Debug;
-import org.apache.maven.wagon.proxy.ProxyInfo;
-import org.apache.maven.wagon.repository.Repository;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
@@ -69,9 +60,7 @@ public class RepositoryUtils
 
     private final Log log;
 
-    private final WagonManager wagonManager;
-
-    private final Settings settings;
+    private final WagonRepositoryConnectorFactory wagonRepositoryConnectorFactory;
 
     private final ProjectBuilder projectBuilder;
 
@@ -87,8 +76,6 @@ public class RepositoryUtils
 
     /**
      * @param log {@link Log}
-     * @param wagonManager {@link WagonManager}
-     * @param settings {@link Settings}
      * @param projectBuilder {@link ProjectBuilder}
      * @param factory {@link ArtifactFactory}
      * @param resolver {@link ArtifactResolver}
@@ -96,16 +83,16 @@ public class RepositoryUtils
      * @param pluginRepositories {@link ArtifactRepository}
      * @param buildingRequest {@link ProjectBuildingRequest}
      * @param repositoryMetadataManager {@link RepositoryMetadataManager}
+     * @param wagonManager {@link WagonManager}
      */
-    public RepositoryUtils( Log log, WagonManager wagonManager, Settings settings,
-                            ProjectBuilder projectBuilder, ArtifactFactory factory,
-                            ArtifactResolver resolver, List<ArtifactRepository> remoteRepositories,
-                            List<ArtifactRepository> pluginRepositories, ProjectBuildingRequest buildingRequest,
+    public RepositoryUtils( Log log, WagonRepositoryConnectorFactory wagonRepositoryConnectorFactory,
+                            ProjectBuilder projectBuilder, ArtifactFactory factory, ArtifactResolver resolver,
+                            List<ArtifactRepository> remoteRepositories, List<ArtifactRepository> pluginRepositories,
+                            ProjectBuildingRequest buildingRequest,
                             RepositoryMetadataManager repositoryMetadataManager )
     {
         this.log = log;
-        this.wagonManager = wagonManager;
-        this.settings = settings;
+        this.wagonRepositoryConnectorFactory = wagonRepositoryConnectorFactory;
         this.projectBuilder = projectBuilder;
         this.factory = factory;
         this.resolver = resolver;
@@ -183,64 +170,23 @@ public class RepositoryUtils
             return false;
         }
 
-        repo = wagonManager.getMirrorRepository( repo );
-
-        String id = repo.getId();
-        Repository repository = new Repository( id, repo.getUrl() );
-
-        Wagon wagon;
+        WagonRepositoryConnector wagonRepositoryConnector;
         try
         {
-            wagon = wagonManager.getWagon( repository );
+            wagonRepositoryConnector = wagonRepositoryConnectorFactory.newInstance( buildingRequest, repo );
         }
-        catch ( UnsupportedProtocolException e )
-        {
-            logError( "Unsupported protocol: '" + repo.getProtocol() + "'", e );
-            return false;
-        }
-        catch ( WagonConfigurationException e )
+        catch ( WagonRepositoryConnectorException e )
         {
             logError( "Unsupported protocol: '" + repo.getProtocol() + "'", e );
             return false;
         }
 
-        wagon.setTimeout( 1000 );
-
-        if ( log.isDebugEnabled() )
-        {
-            Debug debug = new Debug();
-
-            wagon.addSessionListener( debug );
-            wagon.addTransferListener( debug );
-        }
-
         try
         {
-            // FIXME when upgrading to maven 3.x : this must be changed.
-            AuthenticationInfo auth = wagonManager.getAuthenticationInfo( repo.getId() );
+            String resource =
+                StringUtils.replace( getDependencyUrlFromRepository( artifact, repo ), repo.getUrl(), "" );
 
-            ProxyInfo proxyInfo = getProxyInfo();
-            if ( proxyInfo != null )
-            {
-                wagon.connect( repository, auth, proxyInfo );
-            }
-            else
-            {
-                wagon.connect( repository, auth );
-            }
-
-            return wagon.resourceExists( StringUtils.replace( getDependencyUrlFromRepository( artifact, repo ),
-                                                              repo.getUrl(), "" ) );
-        }
-        catch ( ConnectionException e )
-        {
-            logError( "Unable to connect to: " + repo.getUrl(), e );
-            return false;
-        }
-        catch ( AuthenticationException e )
-        {
-            logError( "Unable to connect to: " + repo.getUrl(), e );
-            return false;
+            return wagonRepositoryConnector.resourceExists( resource );
         }
         catch ( TransferFailedException e )
         {
@@ -260,21 +206,9 @@ public class RepositoryUtils
             logError( "Unable to connect to: " + repo.getUrl(), e );
             return false;
         }
-        catch ( AbstractMethodError e )
-        {
-            log.error( "Wagon " + wagon.getClass().getName() + " does not support the resourceExists method" );
-            return false;
-        }
         finally
         {
-            try
-            {
-                wagon.disconnect();
-            }
-            catch ( ConnectionException e )
-            {
-                logError( "Error disconnecting wagon - ignored", e );
-            }
+            wagonRepositoryConnector.close();
         }
     }
 
@@ -360,36 +294,6 @@ public class RepositoryUtils
         }
 
         return repo.getUrl() + "/" + repo.pathOf( copyArtifact );
-    }
-
-    // ----------------------------------------------------------------------
-    // Private methods
-    // ----------------------------------------------------------------------
-
-    /**
-     * Convenience method to map a <code>Proxy</code> object from the user system settings to a <code>ProxyInfo</code>
-     * object.
-     *
-     * @return a proxyInfo object instanced or null if no active proxy is define in the settings.xml
-     */
-    private ProxyInfo getProxyInfo()
-    {
-        if ( settings == null || settings.getActiveProxy() == null )
-        {
-            return null;
-        }
-
-        Proxy settingsProxy = settings.getActiveProxy();
-
-        ProxyInfo proxyInfo = new ProxyInfo();
-        proxyInfo.setHost( settingsProxy.getHost() );
-        proxyInfo.setType( settingsProxy.getProtocol() );
-        proxyInfo.setPort( settingsProxy.getPort() );
-        proxyInfo.setNonProxyHosts( settingsProxy.getNonProxyHosts() );
-        proxyInfo.setUserName( settingsProxy.getUsername() );
-        proxyInfo.setPassword( settingsProxy.getPassword() );
-
-        return proxyInfo;
     }
 
     /**

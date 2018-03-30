@@ -22,7 +22,6 @@ package org.apache.maven.report.projectinfo;
 import java.util.Locale;
 
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
 import org.apache.maven.artifact.repository.metadata.RepositoryMetadataManager;
 import org.apache.maven.plugins.annotations.Component;
@@ -34,6 +33,7 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.report.projectinfo.dependencies.ManagementDependencies;
 import org.apache.maven.report.projectinfo.dependencies.RepositoryUtils;
 import org.apache.maven.report.projectinfo.dependencies.renderer.DependencyManagementRenderer;
+import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorFactory;
 
 /**
  * Generates the Project Dependency Management report.
@@ -73,10 +73,10 @@ public class DependencyManagementReport
     /**
      * Wagon manager component.
      *
-     * @since 2.3
+     * @since 3.0.0
      */
     @Component
-    private WagonManager wagonManager;
+    private WagonRepositoryConnectorFactory wagonRepositoryConnectorFactory;
 
     /**
      * Repository metadata component.
@@ -120,7 +120,7 @@ public class DependencyManagementReport
         buildingRequest.setRemoteRepositories( remoteRepositories );
         
         RepositoryUtils repoUtils =
-            new RepositoryUtils( getLog(), wagonManager, settings, projectBuilder, factory, resolver,
+            new RepositoryUtils( getLog(), wagonRepositoryConnectorFactory, projectBuilder, factory, resolver,
                                  project.getRemoteArtifactRepositories(), project.getPluginArtifactRepositories(),
                                  buildingRequest, repositoryMetadataManager );
 
