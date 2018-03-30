@@ -201,6 +201,12 @@ under the License.
       <artifactId>maven-common-artifact-filters</artifactId>
       <version>3.0.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-artifact-transfer</artifactId>
+      <version>0.9.1</version>
+    </dependency>
+    
 
     <!-- Wagon -->
     <dependency>

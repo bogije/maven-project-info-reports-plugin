@@ -45,8 +45,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkEventAttributeSet;
 import org.apache.maven.doxia.sink.SinkEventAttributes;
@@ -63,6 +61,7 @@ import org.apache.maven.report.projectinfo.dependencies.Dependencies;
 import org.apache.maven.report.projectinfo.dependencies.DependenciesReportConfiguration;
 import org.apache.maven.report.projectinfo.dependencies.RepositoryUtils;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
 import org.apache.maven.shared.dependency.graph.DependencyNode;
 import org.apache.maven.shared.jar.JarData;
 import org.codehaus.plexus.i18n.I18N;
@@ -1275,12 +1274,7 @@ public class DependenciesRenderer
                 {
                     repoUtils.resolve( artifact );
                 }
-                catch ( ArtifactResolutionException e )
-                {
-                    log.error( "Artifact " + artifact.getId() + " can't be resolved.", e );
-                    continue;
-                }
-                catch ( ArtifactNotFoundException e )
+                catch ( ArtifactResolverException e )
                 {
                     if ( ( dependencies.getProject().getGroupId().equals( artifact.getGroupId() ) )
                         && ( dependencies.getProject().getArtifactId().equals( artifact.getArtifactId() ) )
@@ -1290,7 +1284,7 @@ public class DependenciesRenderer
                     }
                     else
                     {
-                        log.error( "Artifact " + artifact.getId() + " not found.", e );
+                        log.error( "Artifact " + artifact.getId() + " can't be resolved.", e );
                     }
 
                     continue;

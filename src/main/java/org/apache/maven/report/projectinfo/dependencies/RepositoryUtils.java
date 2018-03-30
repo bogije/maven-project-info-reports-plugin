@@ -33,10 +33,8 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.RepositoryMetadataManager;
 import org.apache.maven.artifact.repository.metadata.SnapshotArtifactRepositoryMetadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -44,6 +42,9 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.legacy.WagonConfigurationException;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.artifact.resolve.ArtifactResult;
 import org.apache.maven.wagon.ConnectionException;
 import org.apache.maven.wagon.TransferFailedException;
 import org.apache.maven.wagon.UnsupportedProtocolException;
@@ -139,19 +140,21 @@ public class RepositoryUtils
 
     /**
      * @param artifact not null
-     * @throws ArtifactResolutionException if any
-     * @throws ArtifactNotFoundException if any
-     * @see ArtifactResolver#resolve(Artifact, List, ArtifactRepository)
+     * @throws ArtifactResolverException if any 
      */
     public void resolve( Artifact artifact )
-        throws ArtifactResolutionException, ArtifactNotFoundException
+        throws ArtifactResolverException
     {
         List<ArtifactRepository> repos =
             new ArrayList<ArtifactRepository>( pluginRepositories.size() + remoteRepositories.size() );
         repos.addAll( pluginRepositories );
         repos.addAll( remoteRepositories );
+        
+        ProjectBuildingRequest buildRequest = new DefaultProjectBuildingRequest( buildingRequest );
+        buildRequest.setRemoteRepositories( repos );
 
-        resolver.resolve( artifact, repos, getLocalRepository() );
+        ArtifactResult result = resolver.resolveArtifact( buildRequest , artifact );
+        artifact.setFile( result.getArtifact().getFile() );
     }
 
     /**
@@ -324,13 +327,9 @@ public class RepositoryUtils
                     {
                         resolve( artifact );
                     }
-                    catch ( ArtifactResolutionException e )
+                    catch ( ArtifactResolverException e )
                     {
                         log.error( "Artifact: " + artifact.getId() + " could not be resolved." );
-                    }
-                    catch ( ArtifactNotFoundException e )
-                    {
-                        log.error( "Artifact: " + artifact.getId() + " was not found." );
                     }
                 }
 
