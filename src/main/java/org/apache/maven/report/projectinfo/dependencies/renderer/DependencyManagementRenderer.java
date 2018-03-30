@@ -30,7 +30,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataRetrievalException;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
@@ -39,8 +38,9 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.License;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.report.projectinfo.AbstractProjectInfoRenderer;
 import org.apache.maven.report.projectinfo.ProjectInfoReportUtils;
 import org.apache.maven.report.projectinfo.dependencies.ManagementDependencies;
@@ -64,11 +64,9 @@ public class DependencyManagementRenderer
 
     private final ArtifactFactory artifactFactory;
 
-    private final MavenProjectBuilder mavenProjectBuilder;
+    private final ProjectBuilder projectBuilder;
 
-    private final List<ArtifactRepository> remoteRepositories;
-
-    private final ArtifactRepository localRepository;
+    private final ProjectBuildingRequest buildingRequest;
 
     private final RepositoryUtils repoUtils;
 
@@ -82,7 +80,7 @@ public class DependencyManagementRenderer
      * @param dependencies {@link ManagementDependencies}
      * @param artifactMetadataSource {@link ArtifactMetadataSource}
      * @param artifactFactory {@link ArtifactFactory}
-     * @param mavenProjectBuilder {@link MavenProjectBuilder}
+     * @param projectBuilder {@link ProjectBuilder}
      * @param remoteRepositories {@link ArtifactRepository}
      * @param localRepository {@link ArtifactRepository}
      * @param repoUtils {@link RepositoryUtils}
@@ -90,9 +88,8 @@ public class DependencyManagementRenderer
     public DependencyManagementRenderer( Sink sink, Locale locale, I18N i18n, Log log,
                                          ManagementDependencies dependencies,
                                          ArtifactMetadataSource artifactMetadataSource,
-                                         ArtifactFactory artifactFactory, MavenProjectBuilder mavenProjectBuilder,
-                                         List<ArtifactRepository> remoteRepositories,
-                                         ArtifactRepository localRepository, RepositoryUtils repoUtils )
+                                         ArtifactFactory artifactFactory, ProjectBuilder projectBuilder,
+                                         ProjectBuildingRequest buildingRequest, RepositoryUtils repoUtils )
     {
         super( sink, i18n, locale );
 
@@ -100,9 +97,8 @@ public class DependencyManagementRenderer
         this.dependencies = dependencies;
         this.artifactMetadataSource = artifactMetadataSource;
         this.artifactFactory = artifactFactory;
-        this.mavenProjectBuilder = mavenProjectBuilder;
-        this.remoteRepositories = remoteRepositories;
-        this.localRepository = localRepository;
+        this.projectBuilder = projectBuilder;
+        this.buildingRequest = buildingRequest;
         this.repoUtils = repoUtils;
     }
 
@@ -232,7 +228,8 @@ public class DependencyManagementRenderer
                 log.debug( "Resolving range for DependencyManagement on " + artifact.getId() );
 
                 List<ArtifactVersion> versions =
-                    artifactMetadataSource.retrieveAvailableVersions( artifact, localRepository, remoteRepositories );
+                    artifactMetadataSource.retrieveAvailableVersions( artifact, buildingRequest.getLocalRepository(),
+                                                                      buildingRequest.getRemoteRepositories() );
 
                 // only use versions from range
                 for ( Iterator<ArtifactVersion> iter = versions.iterator(); iter.hasNext(); )
@@ -253,9 +250,7 @@ public class DependencyManagementRenderer
                 }
             }
 
-            url =
-                ProjectInfoReportUtils.getArtifactUrl( artifactFactory, artifact, mavenProjectBuilder,
-                                                       remoteRepositories, localRepository );
+            url = ProjectInfoReportUtils.getArtifactUrl( artifactFactory, artifact, projectBuilder, buildingRequest );
 
             MavenProject artifactProject = repoUtils.getMavenProjectFromRepository( artifact );
 

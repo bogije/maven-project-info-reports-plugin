@@ -36,9 +36,11 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.codehaus.plexus.i18n.I18N;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -61,7 +63,7 @@ public class PluginsReport
      * Maven Project Builder component.
      */
     @Component
-    private MavenProjectBuilder mavenProjectBuilder;
+    private ProjectBuilder projectBuilder;
 
     /**
      * Maven Artifact Factory component.
@@ -88,11 +90,10 @@ public class PluginsReport
     @Override
     public void executeReport( Locale locale )
     {
-        @SuppressWarnings( "unchecked" )
         PluginsRenderer r =
             new PluginsRenderer( getLog(), getSink(), locale, getI18N( locale ), project.getBuildPlugins(),
-                                 project.getReportPlugins(), project, mavenProjectBuilder, artifactFactory,
-                                 localRepository );
+                                 project.getReportPlugins(), project, projectBuilder, artifactFactory,
+                                 getSession().getProjectBuildingRequest() );
         r.render();
     }
 
@@ -126,11 +127,11 @@ public class PluginsReport
 
         private final MavenProject project;
 
-        private final MavenProjectBuilder mavenProjectBuilder;
+        private final ProjectBuilder projectBuilder;
 
         private final ArtifactFactory artifactFactory;
 
-        private final ArtifactRepository localRepository;
+        private final ProjectBuildingRequest buildingRequest;
 
         /**
          * @param log {@link #log}
@@ -140,15 +141,15 @@ public class PluginsReport
          * @param plugins {@link Artifact}
          * @param reports {@link Artifact}
          * @param project {@link MavenProject}
-         * @param mavenProjectBuilder {@link MavenProjectBuilder}
+         * @param projectBuilder {@link ProjectBuilder}
          * @param artifactFactory {@link ArtifactFactory}
          * @param localRepository {@link ArtifactRepository}
          *
          */
         public PluginsRenderer( Log log, Sink sink, Locale locale, I18N i18n, List<Plugin> plugins,
                                 List<ReportPlugin> reports, MavenProject project,
-                                MavenProjectBuilder mavenProjectBuilder, ArtifactFactory artifactFactory,
-                                ArtifactRepository localRepository )
+                                ProjectBuilder projectBuilder, ArtifactFactory artifactFactory,
+                                ProjectBuildingRequest buildingRequest )
         {
             super( sink, i18n, locale );
 
@@ -160,11 +161,11 @@ public class PluginsReport
 
             this.project = project;
 
-            this.mavenProjectBuilder = mavenProjectBuilder;
+            this.projectBuilder = projectBuilder;
 
             this.artifactFactory = artifactFactory;
 
-            this.localRepository = localRepository;
+            this.buildingRequest = buildingRequest;
         }
 
         @Override
@@ -207,6 +208,15 @@ public class PluginsReport
             startTable();
             tableHeader( tableHeader );
 
+            List<ArtifactRepository> artifactRepositories = project.getPluginArtifactRepositories();
+            if ( artifactRepositories == null )
+            {
+                artifactRepositories = new ArrayList<ArtifactRepository>();
+            }
+
+            ProjectBuildingRequest buildRequest = new DefaultProjectBuildingRequest( buildingRequest );
+            buildRequest.setRemoteRepositories( artifactRepositories );
+            
             for ( GAV plugin : list )
             {
                 VersionRange versionRange = VersionRange.createFromVersion( plugin.getVersion() );
@@ -214,17 +224,10 @@ public class PluginsReport
                 Artifact pluginArtifact =
                     artifactFactory.createParentArtifact( plugin.getGroupId(), plugin.getArtifactId(),
                                                           versionRange.toString() );
-                @SuppressWarnings( "unchecked" )
-                List<ArtifactRepository> artifactRepositories = project.getPluginArtifactRepositories();
-                if ( artifactRepositories == null )
-                {
-                    artifactRepositories = new ArrayList<ArtifactRepository>();
-                }
                 try
                 {
-                    MavenProject pluginProject = mavenProjectBuilder.buildFromRepository( pluginArtifact,
-                                                                                          artifactRepositories,
-                                                                                          localRepository );
+                    MavenProject pluginProject = projectBuilder.build( pluginArtifact, buildRequest ).getProject();
+
                     tableRow( getPluginRow( pluginProject.getGroupId(), pluginProject.getArtifactId(), pluginProject
                                             .getVersion(), pluginProject.getUrl() ) );
                 }

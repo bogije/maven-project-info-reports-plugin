@@ -29,8 +29,6 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 import javax.net.ssl.HostnameVerifier;
@@ -47,10 +45,10 @@ import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 // CHECKSTYLE_OFF: UnusedImports
 import org.apache.maven.reporting.AbstractMavenReportRenderer;
 // CHECKSTYLE_ON: UnusedImports
@@ -214,15 +212,14 @@ public class ProjectInfoReportUtils
     /**
      * @param factory not null
      * @param artifact not null
-     * @param mavenProjectBuilder not null
-     * @param remoteRepositories not null
-     * @param localRepository not null
+     * @param projectBuilder not null
+     * @param buildingRequest not null
      * @return the artifact url or null if an error occurred.
      */
     // CHECKSTYLE_OFF: LineLength
     public static String getArtifactUrl( ArtifactFactory factory, Artifact artifact,
-                                         MavenProjectBuilder mavenProjectBuilder,
-                                         List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository )
+                                         ProjectBuilder projectBuilder,
+                                         ProjectBuildingRequest buildingRequest )
     // CHECKSTYLE_ON: LineLength
     {
         if ( Artifact.SCOPE_SYSTEM.equals( artifact.getScope() ) )
@@ -239,10 +236,7 @@ public class ProjectInfoReportUtils
         }
         try
         {
-            MavenProject pluginProject =
-                mavenProjectBuilder.buildFromRepository( copyArtifact,
-                                                         remoteRepositories == null ? Collections.EMPTY_LIST
-                                                                         : remoteRepositories, localRepository );
+            MavenProject pluginProject = projectBuilder.build( copyArtifact, buildingRequest ).getProject();
 
             if ( isArtifactUrlValid( pluginProject.getUrl() ) )
             {

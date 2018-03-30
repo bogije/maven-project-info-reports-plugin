@@ -21,7 +21,6 @@ package org.apache.maven.report.projectinfo;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.model.Plugin;
@@ -30,13 +29,14 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.codehaus.plexus.i18n.I18N;
 import org.codehaus.plexus.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -61,7 +61,7 @@ public class PluginManagementReport
      * Maven Project Builder component.
      */
     @Component
-    private MavenProjectBuilder mavenProjectBuilder;
+    private ProjectBuilder projectBuilder;
 
     /**
      * Maven Artifact Factory component.
@@ -78,8 +78,8 @@ public class PluginManagementReport
     {
         PluginManagementRenderer r =
             new PluginManagementRenderer( getLog(), getSink(), locale, getI18N( locale ),
-                                          project.getPluginManagement().getPlugins(), project, mavenProjectBuilder,
-                                          artifactFactory, localRepository );
+                                          project.getPluginManagement().getPlugins(), project, projectBuilder,
+                                          artifactFactory, getSession().getProjectBuildingRequest() );
         r.render();
     }
 
@@ -126,11 +126,11 @@ public class PluginManagementReport
 
         private final MavenProject project;
 
-        private final MavenProjectBuilder mavenProjectBuilder;
+        private final ProjectBuilder projectBuilder;
 
         private final ArtifactFactory artifactFactory;
 
-        private final ArtifactRepository localRepository;
+        private final ProjectBuildingRequest buildingRequest;
 
         /**
          * @param log {@link #log}
@@ -139,13 +139,13 @@ public class PluginManagementReport
          * @param i18n {@link I18N}
          * @param plugins {@link Plugin}
          * @param project {@link MavenProject}
-         * @param mavenProjectBuilder {@link MavenProjectBuilder}
+         * @param projectBuilder {@link ProjectBuilder}
          * @param artifactFactory {@link ArtifactFactory}
-         * @param localRepository {@link ArtifactRepository}
+         * @param buildingRequest {@link ArtifactRepository}
          */
         public PluginManagementRenderer( Log log, Sink sink, Locale locale, I18N i18n, List<Plugin> plugins,
-                                         MavenProject project, MavenProjectBuilder mavenProjectBuilder,
-                                         ArtifactFactory artifactFactory, ArtifactRepository localRepository )
+                                         MavenProject project, ProjectBuilder projectBuilder,
+                                         ArtifactFactory artifactFactory, ProjectBuildingRequest buildingRequest )
         {
             super( sink, i18n, locale );
 
@@ -155,11 +155,11 @@ public class PluginManagementReport
 
             this.project = project;
 
-            this.mavenProjectBuilder = mavenProjectBuilder;
+            this.projectBuilder = projectBuilder;
 
             this.artifactFactory = artifactFactory;
 
-            this.localRepository = localRepository;
+            this.buildingRequest = buildingRequest;
         }
 
         @Override
@@ -201,6 +201,9 @@ public class PluginManagementReport
             startTable();
             tableHeader( tableHeader );
 
+            ProjectBuildingRequest buildRequest = new DefaultProjectBuildingRequest( buildingRequest );
+            buildRequest.setRemoteRepositories( project.getPluginArtifactRepositories() );
+            
             for ( Plugin plugin : pluginManagement )
             {
                 VersionRange versionRange;
@@ -215,17 +218,11 @@ public class PluginManagementReport
 
                 Artifact pluginArtifact = artifactFactory.createParentArtifact( plugin.getGroupId(), plugin
                     .getArtifactId(), versionRange.toString() );
-                @SuppressWarnings( "unchecked" )
-                List<ArtifactRepository> artifactRepositories = project.getPluginArtifactRepositories();
-                if ( artifactRepositories == null )
-                {
-                    artifactRepositories = new ArrayList<ArtifactRepository>();
-                }
+
                 try
                 {
-                    MavenProject pluginProject = mavenProjectBuilder.buildFromRepository( pluginArtifact,
-                                                                                          artifactRepositories,
-                                                                                          localRepository );
+                    MavenProject pluginProject = projectBuilder.build( pluginArtifact, buildingRequest ).getProject();
+                    
                     tableRow( getPluginRow( pluginProject.getGroupId(), pluginProject.getArtifactId(), pluginProject
                         .getVersion(), pluginProject.getUrl() ) );
                 }

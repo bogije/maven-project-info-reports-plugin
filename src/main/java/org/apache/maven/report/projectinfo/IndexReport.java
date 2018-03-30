@@ -25,7 +25,7 @@ import org.apache.maven.doxia.tools.SiteTool;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.codehaus.plexus.i18n.I18N;
 
 import java.util.List;
@@ -72,7 +72,7 @@ public class IndexReport
     @Override
     public void executeReport( Locale locale )
     {
-        ProjectIndexRenderer r = new ProjectIndexRenderer( project, getReactorProjects(), mavenProjectBuilder,
+        ProjectIndexRenderer r = new ProjectIndexRenderer( project, getReactorProjects(), projectBuilder,
                                                            localRepository, getName( locale ), getDescription( locale ),
                                                            getSink(), getI18N( locale ), locale, getLog(), siteTool );
 
@@ -108,10 +108,10 @@ public class IndexReport
         private boolean modules = false;
 
         ProjectIndexRenderer( MavenProject project, List<MavenProject> reactorProjects,
-                              MavenProjectBuilder mavenProjectBuilder, ArtifactRepository localRepository, String title,
+                              ProjectBuilder projectBuilder, ArtifactRepository localRepository, String title,
                               String description, Sink sink, I18N i18n, Locale locale, Log log, SiteTool siteTool )
         {
-            super( sink, project, reactorProjects, mavenProjectBuilder, localRepository, i18n, locale, log, siteTool );
+            super( sink, project, reactorProjects, projectBuilder, localRepository, i18n, locale, log, siteTool );
 
             this.title = title;
 

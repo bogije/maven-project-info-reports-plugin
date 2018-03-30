@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.util.Locale;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.manager.WagonManager;
@@ -40,7 +41,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.report.projectinfo.dependencies.Dependencies;
 import org.apache.maven.report.projectinfo.dependencies.DependenciesReportConfiguration;
@@ -78,7 +79,7 @@ public class DependenciesReport
      * Maven Project Builder component.
      */
     @Component
-    private MavenProjectBuilder mavenProjectBuilder;
+    private ProjectBuilder projectBuilder;
 
     /**
      * Artifact metadata source component.
@@ -185,11 +186,16 @@ public class DependenciesReport
         {
             getLog().error( "Cannot copy ressources", e );
         }
+        
+        ProjectBuildingRequest buildingRequest =
+            new DefaultProjectBuildingRequest( getSession().getProjectBuildingRequest() );
+        buildingRequest.setLocalRepository( localRepository );
+        buildingRequest.setRemoteRepositories( remoteRepositories );
 
-        @SuppressWarnings( "unchecked" ) RepositoryUtils repoUtils =
-            new RepositoryUtils( getLog(), wagonManager, settings, mavenProjectBuilder, factory, resolver,
+        RepositoryUtils repoUtils =
+            new RepositoryUtils( getLog(), wagonManager, settings, projectBuilder, factory, resolver,
                                  project.getRemoteArtifactRepositories(), project.getPluginArtifactRepositories(),
-                                 localRepository, repositoryMetadataManager );
+                                 buildingRequest, repositoryMetadataManager );
 
         DependencyNode dependencyNode = resolveProject();
 
@@ -200,8 +206,8 @@ public class DependenciesReport
 
         DependenciesRenderer r =
             new DependenciesRenderer( getSink(), locale, getI18N( locale ), getLog(), settings, dependencies,
-                                      dependencyNode, config, repoUtils, artifactFactory, mavenProjectBuilder,
-                                      remoteRepositories, localRepository );
+                                      dependencyNode, config, repoUtils, artifactFactory, projectBuilder,
+                                      buildingRequest );
         r.render();
     }
 

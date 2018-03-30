@@ -54,8 +54,9 @@ import org.apache.maven.doxia.util.HtmlTools;
 import org.apache.maven.model.License;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.report.projectinfo.AbstractProjectInfoRenderer;
 import org.apache.maven.report.projectinfo.ProjectInfoReportUtils;
 import org.apache.maven.report.projectinfo.dependencies.Dependencies;
@@ -134,11 +135,9 @@ public class DependenciesRenderer
 
     private final ArtifactFactory artifactFactory;
 
-    private final MavenProjectBuilder mavenProjectBuilder;
+    private final ProjectBuilder projectBuilder;
 
-    private final List<ArtifactRepository> remoteRepositories;
-
-    private final ArtifactRepository localRepository;
+    private final ProjectBuildingRequest buildingRequest;
 
     static
     {
@@ -166,15 +165,14 @@ public class DependenciesRenderer
      * @param config {@link DependenciesReportConfiguration}
      * @param repoUtils {@link RepositoryUtils}
      * @param artifactFactory {@link ArtifactFactory}
-     * @param mavenProjectBuilder {@link MavenProjectBuilder}
-     * @param remoteRepositories {@link ArtifactRepository}
-     * @param localRepository {@link ArtifactRepository}
+     * @param projectBuilder {@link ProjectBuilder}
+     * @param buildingRequest {@link ProjectBuildingRequest}
      */
     public DependenciesRenderer( Sink sink, Locale locale, I18N i18n, Log log, Settings settings,
                                  Dependencies dependencies, DependencyNode dependencyTreeNode,
                                  DependenciesReportConfiguration config, RepositoryUtils repoUtils,
-                                 ArtifactFactory artifactFactory, MavenProjectBuilder mavenProjectBuilder,
-                                 List<ArtifactRepository> remoteRepositories, ArtifactRepository localRepository )
+                                 ArtifactFactory artifactFactory, ProjectBuilder projectBuilder,
+                                 ProjectBuildingRequest buildingRequest )
     {
         super( sink, i18n, locale );
 
@@ -185,9 +183,8 @@ public class DependenciesRenderer
         this.repoUtils = repoUtils;
         this.configuration = config;
         this.artifactFactory = artifactFactory;
-        this.mavenProjectBuilder = mavenProjectBuilder;
-        this.remoteRepositories = remoteRepositories;
-        this.localRepository = localRepository;
+        this.projectBuilder = projectBuilder;
+        this.buildingRequest = buildingRequest; 
 
         // Using the right set of symbols depending of the locale
         DEFAULT_DECIMAL_FORMAT.setDecimalFormatSymbols( new DecimalFormatSymbols( locale ) );
@@ -892,8 +889,7 @@ public class DependenciesRenderer
             artifact.isOptional() ? getI18nString( "column.isOptional" ) : getI18nString( "column.isNotOptional" );
 
         String url =
-            ProjectInfoReportUtils.getArtifactUrl( artifactFactory, artifact, mavenProjectBuilder, remoteRepositories,
-                                                   localRepository );
+            ProjectInfoReportUtils.getArtifactUrl( artifactFactory, artifact, projectBuilder, buildingRequest );
         String artifactIdCell = ProjectInfoReportUtils.getArtifactIdCell( artifact.getArtifactId(), url );
 
         MavenProject artifactProject;
@@ -901,7 +897,7 @@ public class DependenciesRenderer
         try
         {
             artifactProject = repoUtils.getMavenProjectFromRepository( artifact );
-            @SuppressWarnings( "unchecked" )
+
             List<License> licenses = artifactProject.getLicenses();
             for ( License license : licenses )
             {

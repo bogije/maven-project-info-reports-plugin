@@ -38,8 +38,9 @@ import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.legacy.WagonConfigurationException;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Settings;
@@ -71,7 +72,7 @@ public class RepositoryUtils
 
     private final Settings settings;
 
-    private final MavenProjectBuilder mavenProjectBuilder;
+    private final ProjectBuilder projectBuilder;
 
     private final ArtifactFactory factory;
 
@@ -81,35 +82,35 @@ public class RepositoryUtils
 
     private final ArtifactResolver resolver;
 
-    private final ArtifactRepository localRepository;
+    private final ProjectBuildingRequest buildingRequest;
 
     /**
      * @param log {@link Log}
      * @param wagonManager {@link WagonManager}
      * @param settings {@link Settings}
-     * @param mavenProjectBuilder {@link MavenProjectBuilder}
+     * @param projectBuilder {@link ProjectBuilder}
      * @param factory {@link ArtifactFactory}
      * @param resolver {@link ArtifactResolver}
      * @param remoteRepositories {@link ArtifactRepository}
      * @param pluginRepositories {@link ArtifactRepository}
-     * @param localRepository {@link ArtifactRepository}
+     * @param buildingRequest {@link ProjectBuildingRequest}
      * @param repositoryMetadataManager {@link RepositoryMetadataManager}
      */
     public RepositoryUtils( Log log, WagonManager wagonManager, Settings settings,
-                            MavenProjectBuilder mavenProjectBuilder, ArtifactFactory factory,
+                            ProjectBuilder projectBuilder, ArtifactFactory factory,
                             ArtifactResolver resolver, List<ArtifactRepository> remoteRepositories,
-                            List<ArtifactRepository> pluginRepositories, ArtifactRepository localRepository,
+                            List<ArtifactRepository> pluginRepositories, ProjectBuildingRequest buildingRequest,
                             RepositoryMetadataManager repositoryMetadataManager )
     {
         this.log = log;
         this.wagonManager = wagonManager;
         this.settings = settings;
-        this.mavenProjectBuilder = mavenProjectBuilder;
+        this.projectBuilder = projectBuilder;
         this.factory = factory;
         this.resolver = resolver;
         this.remoteRepositories = remoteRepositories;
         this.pluginRepositories = pluginRepositories;
-        this.localRepository = localRepository;
+        this.buildingRequest = buildingRequest;
     }
 
     /**
@@ -117,7 +118,7 @@ public class RepositoryUtils
      */
     public ArtifactRepository getLocalRepository()
     {
-        return localRepository;
+        return buildingRequest.getLocalRepository();
     }
 
     /**
@@ -150,7 +151,7 @@ public class RepositoryUtils
         repos.addAll( pluginRepositories );
         repos.addAll( remoteRepositories );
 
-        resolver.resolve( artifact, repos, localRepository );
+        resolver.resolve( artifact, repos, getLocalRepository() );
     }
 
     /**
@@ -294,9 +295,7 @@ public class RepositoryUtils
             allowStubModel = true;
         }
 
-        // TODO: we should use the MavenMetadataSource instead
-        return mavenProjectBuilder.buildFromRepository( projectArtifact, remoteRepositories, localRepository,
-                                                        allowStubModel );
+        return projectBuilder.build( projectArtifact, allowStubModel, buildingRequest ).getProject();
     }
 
     /**
