@@ -39,7 +39,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.maven.artifact.Artifact;
@@ -376,34 +375,5 @@ public class ProjectInfoReportUtils
         }
 
         return conn;
-    }
-
-    /**
-     * @param str The string to be checked.
-     * @return true if is number false otherwise.
-     */
-    @Deprecated
-    public static boolean isNumber( String str )
-    {
-        if ( str.startsWith( "+" ) )
-        {
-            str = str.substring( 1 );
-        }
-        return NumberUtils.isNumber( str );
-    }
-
-    /**
-     * @param str The string which should be converted.
-     * @param defaultValue The default value.
-     * @return Converted string.
-     */
-    @Deprecated
-    public static float toFloat( String str, float defaultValue )
-    {
-        if ( str.startsWith( "+" ) )
-        {
-            str = str.substring( 1 );
-        }
-        return NumberUtils.toFloat( str, defaultValue );
     }
 }

@@ -115,10 +115,6 @@ public abstract class AbstractProjectInfoReport
     @Component
     private I18N i18n;
 
-    /**
-     * Project builder (deprecated in Maven 3: should use ProjectBuilder, which will avoid
-     * issues like DOXIASITETOOLS-166)
-     */
     @Component
     protected ProjectBuilder projectBuilder;
 
