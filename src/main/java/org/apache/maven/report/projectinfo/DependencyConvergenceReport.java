@@ -48,17 +48,17 @@ import org.apache.maven.report.projectinfo.dependencies.DependencyVersionMap;
 import org.apache.maven.report.projectinfo.dependencies.SinkSerializingDependencyNodeVisitor;
 import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.shared.artifact.filter.StrictPatternIncludesArtifactFilter;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
-import org.apache.maven.shared.dependency.graph.filter.AncestorOrSelfDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.AndDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.ArtifactDependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.filter.DependencyNodeFilter;
-import org.apache.maven.shared.dependency.graph.traversal.BuildingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.CollectingDependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.DependencyNodeVisitor;
-import org.apache.maven.shared.dependency.graph.traversal.FilteringDependencyNodeVisitor;
+import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
+import org.apache.maven.shared.dependency.tree.filter.AncestorOrSelfDependencyNodeFilter;
+import org.apache.maven.shared.dependency.tree.filter.AndDependencyNodeFilter;
+import org.apache.maven.shared.dependency.tree.filter.ArtifactDependencyNodeFilter;
+import org.apache.maven.shared.dependency.tree.filter.DependencyNodeFilter;
+import org.apache.maven.shared.dependency.tree.traversal.BuildingDependencyNodeVisitor;
+import org.apache.maven.shared.dependency.tree.traversal.CollectingDependencyNodeVisitor;
+import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.apache.maven.shared.dependency.tree.traversal.FilteringDependencyNodeVisitor;
 
 /**
  * Generates the Project Dependency Convergence report for (reactor) builds.
@@ -94,7 +94,7 @@ public class DependencyConvergenceReport
      * Dependency tree builder, will use it to build dependency tree.
      */
     @Component
-    private DependencyGraphBuilder dependencyGraphBuilder;
+    private DependencyTreeBuilder dependencyTreeBuilder;
 
     private ArtifactFilter filter = null;
 
@@ -915,11 +915,13 @@ public class DependencyConvergenceReport
         try
         {
             DependencyNode node =
-                (DependencyNode) dependencyGraphBuilder.buildDependencyGraph( buildingRequest, filter );
+                (DependencyNode) dependencyTreeBuilder.buildDependencyTree( buildingRequest.getProject(),
+                                                                            localRepository,
+                                                                            filter );
 
             return node;
         }
-        catch ( DependencyGraphBuilderException e )
+        catch ( DependencyTreeBuilderException e )
         {
             throw new MavenReportException( "Could not build dependency tree: " + e.getMessage(), e );
         }

@@ -46,9 +46,9 @@ import org.apache.maven.report.projectinfo.dependencies.DependenciesReportConfig
 import org.apache.maven.report.projectinfo.dependencies.RepositoryUtils;
 import org.apache.maven.report.projectinfo.dependencies.renderer.DependenciesRenderer;
 import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorFactory;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilderException;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
+import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.apache.maven.shared.jar.classes.JarClassesAnalysis;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.ReaderFactory;
@@ -97,7 +97,7 @@ public class DependenciesReport
      * @since 2.5
      */
     @Component( hint = "default" )
-    private DependencyGraphBuilder dependencyGraphBuilder;
+    private DependencyTreeBuilder dependencyTreeBuilder;
 
     /**
      * Jar classes analyzer component.
@@ -229,9 +229,10 @@ public class DependenciesReport
             buildingRequest.setProject( getProject() );
             
             ArtifactFilter artifactFilter = new ScopeArtifactFilter( Artifact.SCOPE_TEST );
-            return dependencyGraphBuilder.buildDependencyGraph( buildingRequest, artifactFilter );
+            return dependencyTreeBuilder.buildDependencyTree( buildingRequest.getProject(), localRepository,
+                                                              artifactFilter );
         }
-        catch ( DependencyGraphBuilderException e )
+        catch ( DependencyTreeBuilderException e )
         {
             getLog().error( "Unable to build dependency tree.", e );
             return null;

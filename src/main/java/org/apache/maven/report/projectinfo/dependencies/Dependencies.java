@@ -29,7 +29,7 @@ import java.util.jar.JarEntry;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.jar.JarAnalyzer;
 import org.apache.maven.shared.jar.JarData;
 import org.apache.maven.shared.jar.classes.JarClasses;

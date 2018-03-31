@@ -61,7 +61,8 @@ import org.apache.maven.report.projectinfo.dependencies.DependenciesReportConfig
 import org.apache.maven.report.projectinfo.dependencies.RepositoryUtils;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.settings.Settings;
-import org.apache.maven.shared.dependency.graph.DependencyNode;
+import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.jar.JarData;
 import org.codehaus.plexus.i18n.I18N;
 import org.codehaus.plexus.util.StringUtils;
@@ -1256,43 +1257,33 @@ public class DependenciesRenderer
      */
     private void resolveAtrifacts( List<Artifact> artifacts )
     {
-//        for ( Artifact artifact : artifacts )
-//        {
-//            // TODO site:run Why do we need to resolve this...
-//            if ( artifact.getFile() == null )
-//            {
-//                if ( Artifact.SCOPE_SYSTEM.equals( artifact.getScope() ) )
-//                {
-//                    // can not resolve system scope artifact file
-//                    continue;
-//                }
-//
-//                try
-//                {
-//                    repoUtils.resolve( artifact );
-//                }
-//                catch ( ArtifactResolverException e )
-//                {
-//                    if ( ( dependencies.getProject().getGroupId().equals( artifact.getGroupId() ) )
-//                        && ( dependencies.getProject().getArtifactId().equals( artifact.getArtifactId() ) )
-//                        && ( dependencies.getProject().getVersion().equals( artifact.getVersion() ) ) )
-//                    {
-//                        log.warn( "The artifact of this project has never been deployed." );
-//                    }
-//                    else
-//                    {
-//                        log.error( "Artifact " + artifact.getId() + " can't be resolved.", e );
-//                    }
-//
-//                    continue;
-//                }
-//
-//                if ( artifact.getFile() == null )
-//                {
-//                    log.error( "Artifact " + artifact.getId() + " has no file, even after resolution." );
-//                }
-//            }
-//        }
+        for ( Artifact artifact : artifacts )
+        {
+            // TODO site:run Why do we need to resolve this...
+            if ( artifact.getFile() == null )
+            {
+                if ( Artifact.SCOPE_SYSTEM.equals( artifact.getScope() ) )
+                {
+                    // can not resolve system scope artifact file
+                    continue;
+                }
+
+                try
+                {
+                    repoUtils.resolve( artifact );
+                }
+                catch ( ArtifactResolverException e )
+                {
+                    log.error( "Artifact " + artifact.getId() + " can't be resolved.", e );
+                    continue;
+                }
+
+                if ( artifact.getFile() == null )
+                {
+                    log.error( "Artifact " + artifact.getId() + " has no file, even after resolution." );
+                }
+            }
+        }
     }
 
     private Object invoke( Object object, String method )

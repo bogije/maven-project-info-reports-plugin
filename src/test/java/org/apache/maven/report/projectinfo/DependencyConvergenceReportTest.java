@@ -23,8 +23,6 @@ import java.io.File;
 
 import java.net.URL;
 
-import org.apache.maven.shared.dependency.graph.DependencyGraphBuilder;
-
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.TextBlock;
 import com.meterware.httpunit.WebConversation;
@@ -85,8 +83,8 @@ public class DependencyConvergenceReportTest
         AbstractProjectInfoReport mojo = super.createReportMojo( goal, pluginXmlFile );
 
         // Test is confused because org.eclipse.aether.artifact.Artifact is also on the classpath
-        DependencyGraphBuilder dependencyGraphBuilder = lookup( DependencyGraphBuilder.class, "maven3" );
-        setVariableValueToObject( mojo, "dependencyGraphBuilder", dependencyGraphBuilder );
+//        DependencyGraphBuilder dependencyGraphBuilder = lookup( DependencyGraphBuilder.class, "maven3" );
+//        setVariableValueToObject( mojo, "dependencyGraphBuilder", dependencyGraphBuilder );
         
         return mojo;
     }
