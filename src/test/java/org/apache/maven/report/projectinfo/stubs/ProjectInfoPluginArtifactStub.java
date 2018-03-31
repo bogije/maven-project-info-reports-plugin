@@ -30,94 +30,26 @@ import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 public class ProjectInfoPluginArtifactStub
     extends ArtifactStub
 {
-    private String groupId;
-
-    private String artifactId;
-
-    private String version;
-
-    private String packaging;
-
-    private VersionRange versionRange;
-
-    private ArtifactHandler handler;
-
-    public ProjectInfoPluginArtifactStub( String groupId, String artifactId, String version, String packaging )
+    private ArtifactHandler artifactHandler;
+    
+    public ProjectInfoPluginArtifactStub( String groupId, String artifactId, String version, String type )
     {
-        this.groupId = groupId;
-        this.artifactId = artifactId;
-        this.version = version;
-        this.packaging = packaging;
-        versionRange = VersionRange.createFromVersion( version );
+        setGroupId( groupId );
+        setArtifactId( artifactId );
+        setVersion( version );
+        setVersionRange( VersionRange.createFromVersion( version ) );
+        setType( type );
     }
-
-    @Override
-    public void setGroupId( String groupId )
-    {
-        this.groupId = groupId;
-    }
-
-    @Override
-    public String getGroupId()
-    {
-        return groupId;
-    }
-
-    @Override
-    public void setArtifactId( String artifactId )
-    {
-        this.artifactId = artifactId;
-    }
-
-    @Override
-    public String getArtifactId()
-    {
-        return artifactId;
-    }
-
-    @Override
-    public void setVersion( String version )
-    {
-        this.version = version;
-    }
-
-    @Override
-    public String getVersion()
-    {
-        return version;
-    }
-
-    public void setPackaging( String packaging )
-    {
-        this.packaging = packaging;
-    }
-
-    public String getPackaging()
-    {
-        return packaging;
-    }
-
-    @Override
-    public VersionRange getVersionRange()
-    {
-        return versionRange;
-    }
-
-    @Override
-    public void setVersionRange( VersionRange versionRange )
-    {
-        this.versionRange = versionRange;
-    }
-
+    
     @Override
     public ArtifactHandler getArtifactHandler()
     {
-        return handler;
+        return artifactHandler;
     }
-
+    
     @Override
-    public void setArtifactHandler( ArtifactHandler handler )
+    public void setArtifactHandler( ArtifactHandler artifactHandler )
     {
-        this.handler = handler;
+        this.artifactHandler = artifactHandler;
     }
 }
