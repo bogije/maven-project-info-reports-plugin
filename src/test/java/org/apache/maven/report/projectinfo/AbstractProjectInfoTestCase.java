@@ -219,6 +219,4 @@ public abstract class AbstractProjectInfoTestCase
 
         return new File( outputDir, filename );
     }
-
-
 }
