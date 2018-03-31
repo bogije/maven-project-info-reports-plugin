@@ -43,7 +43,6 @@ import org.codehaus.plexus.i18n.I18N;
  * Generates the Project Modules report.
  *
  * @author ltheussl
- * @version $Id$
  * @since 2.2
  */
 @Mojo( name = "modules" )

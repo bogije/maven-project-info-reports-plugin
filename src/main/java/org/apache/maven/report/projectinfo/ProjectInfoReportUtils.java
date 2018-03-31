@@ -59,7 +59,6 @@ import org.codehaus.plexus.util.StringUtils;
  * Utilities methods.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  * @since 2.1
  */
 public class ProjectInfoReportUtils

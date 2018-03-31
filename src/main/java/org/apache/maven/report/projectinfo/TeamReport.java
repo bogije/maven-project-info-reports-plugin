@@ -41,7 +41,6 @@ import org.codehaus.plexus.util.StringUtils;
  * Generates the Project Team report.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton </a>
- * @version $Id$
  * @since 2.0
  */
 @Mojo( name = "project-team" )

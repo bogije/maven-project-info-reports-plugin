@@ -46,7 +46,6 @@ import java.util.Locale;
  * Generates the Project Plugin Management report.
  *
  * @author Nick Stolwijk
- * @version $Id$
  * @since 2.1
  */
 @Mojo( name = "plugin-management", requiresDependencyResolution = ResolutionScope.TEST )

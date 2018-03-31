@@ -47,7 +47,6 @@ import org.codehaus.plexus.util.StringUtils;
 /**
  * Utilities methods to play with repository
  *
- * @version $Id$
  * @since 2.1
  */
 public class RepositoryUtils

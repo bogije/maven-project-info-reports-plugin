@@ -58,7 +58,6 @@ import org.codehaus.plexus.util.ReaderFactory;
  *
  * @author <a href="mailto:jason@maven.org">Jason van Zyl </a>
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton </a>
- * @version $Id$
  * @since 2.0
  */
 @Mojo( name = "dependencies", requiresDependencyResolution = ResolutionScope.TEST )

@@ -50,7 +50,6 @@ import org.codehaus.plexus.util.StringUtils;
 
 /**
  * @author Nick Stolwijk
- * @version $Id$
  * @since 2.1
  */
 public class DependencyManagementRenderer

@@ -70,7 +70,6 @@ import org.codehaus.plexus.util.StringUtils;
 /**
  * Renderer the dependencies report.
  *
- * @version $Id$
  * @since 2.1
  */
 public class DependenciesRenderer

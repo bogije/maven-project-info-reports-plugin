@@ -38,7 +38,6 @@ import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorFactory
  * Generates the Project Dependency Management report.
  *
  * @author Nick Stolwijk
- * @version $Id$
  * @since 2.1
  */
 @Mojo( name = "dependency-management", requiresDependencyResolution = ResolutionScope.TEST )

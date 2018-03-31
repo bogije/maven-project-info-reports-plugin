@@ -66,7 +66,6 @@ import org.apache.maven.shared.dependency.graph.traversal.FilteringDependencyNod
  * @author <a href="mailto:joakim@erdfelt.com">Joakim Erdfelt</a>
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton </a>
  * @author <a href="mailto:wangyf2010@gmail.com">Simon Wang </a>
- * @version $Id$
  * @since 2.0
  */
 @Mojo( name = "dependency-convergence", aggregator = true )

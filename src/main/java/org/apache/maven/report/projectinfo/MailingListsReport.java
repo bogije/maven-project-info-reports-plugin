@@ -37,7 +37,6 @@ import java.util.Locale;
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter </a>
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton </a>
- * @version $Id$
  * @since 2.0
  */
 @Mojo( name = "mailing-list" )

@@ -73,7 +73,6 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * Base class with the things that should be in AbstractMavenReport anyway.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
- * @version $Id$
  * @since 2.0
  */
 public abstract class AbstractProjectInfoReport

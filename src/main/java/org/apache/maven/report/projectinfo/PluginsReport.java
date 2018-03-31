@@ -48,7 +48,6 @@ import org.codehaus.plexus.util.StringUtils;
  * Generates the Project Plugins report.
  *
  * @author <a href="mailto:vincent.siveton@gmail.com">Vincent Siveton</a>
- * @version $Id$
  * @since 2.1
  */
 @Mojo( name = "plugins", requiresDependencyResolution = ResolutionScope.TEST )
