@@ -25,10 +25,12 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorException;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.logging.Logger;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
@@ -36,12 +38,15 @@ import org.sonatype.aether.transfer.NoRepositoryConnectorException;
  * @author Robert Scholte
  * @since 3.0.0
  */
-@Component( role = WagonRepositoryConnectorFactory.class, hint = "maven3" )
-public class Maven30WagonRepositoryConnectorFactory
+@Component( role = org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorFactory.class, hint = "maven3" )
+public class Maven30WagonRepositoryConnectorFactory 
+    implements org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorFactory
 {
-    @Requirement( role = WagonRepositoryConnectorFactory.class, hint = "wagon" )
+    private Logger logger;
+    
+    @Requirement( role = RepositoryConnectorFactory.class, hint = "wagon" )
     private WagonRepositoryConnectorFactory wrcf;
-
+    
     public Maven30WagonRepositoryConnector newInstance( ProjectBuildingRequest request, ArtifactRepository repository )
         throws WagonRepositoryConnectorException
     {
@@ -51,7 +56,11 @@ public class Maven30WagonRepositoryConnectorFactory
 
             RepositoryConnector repoConnector = wrcf.newInstance( request.getRepositorySession(), remoteRepository );
 
-            return new Maven30WagonRepositoryConnector( repoConnector );
+            Maven30WagonRepositoryConnector connector = new Maven30WagonRepositoryConnector( repoConnector );
+
+            connector.enableLogging( logger );
+
+            return connector;
         }
         catch ( NoRepositoryConnectorException e )
         {
@@ -84,5 +93,11 @@ public class Maven30WagonRepositoryConnectorFactory
         }
 
         return aetherRepo;
+    }
+    
+    @Override
+    public void enableLogging( Logger logger )
+    {
+        this.logger = logger;
     }
 }

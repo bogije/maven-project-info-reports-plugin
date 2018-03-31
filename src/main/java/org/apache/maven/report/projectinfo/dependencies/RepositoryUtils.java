@@ -97,30 +97,6 @@ public class RepositoryUtils
     }
 
     /**
-     * @return localrepo
-     */
-    public ArtifactRepository getLocalRepository()
-    {
-        return buildingRequest.getLocalRepository();
-    }
-
-    /**
-     * @return remote artifact repo
-     */
-    public List<ArtifactRepository> getRemoteArtifactRepositories()
-    {
-        return remoteRepositories;
-    }
-
-    /**
-     * @return plugin artifact repo
-     */
-    public List<ArtifactRepository> getPluginArtifactRepositories()
-    {
-        return pluginRepositories;
-    }
-
-    /**
      * @param artifact not null
      * @throws ArtifactResolverException if any 
      */

@@ -415,13 +415,11 @@ under the License.
       <groupId>org.sonatype.aether</groupId>
       <artifactId>aether-connector-wagon</artifactId>
       <version>1.7</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.aether</groupId>
       <artifactId>aether-connector-wagon</artifactId>
       <version>0.9.0.M2</version>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
 
@@ -447,6 +445,7 @@ under the License.
               <!--
                 This is a plugin-specific data file that must only contain the file names of available resources.
               -->
+              <exclude>dependency-reduced-pom.xml</exclude>
               <exclude>src/main/resources/org/apache/maven/report/projectinfo/resources/resources.txt</exclude>
             </excludes>
           </configuration>
@@ -487,6 +486,29 @@ under the License.
             <exclude>**/DependenciesReportTest*</exclude><!-- FIXME: missing Maven 3 class or conflict -->
           </excludes>
         </configuration>
+      </plugin>
+      <plugin>
+        <!-- shading required because the aether connector are not accessible in the report realm -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <includes>
+                  <include>*:aether-connector-wagon</include>
+                </includes>
+              </artifactSet>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer"/>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <!-- To use Jetty SSL in tests -->
       <plugin>

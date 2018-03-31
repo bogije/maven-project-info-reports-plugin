@@ -25,20 +25,25 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorException;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.logging.Logger;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.spi.connector.RepositoryConnector;
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
 import org.eclipse.aether.transfer.NoRepositoryConnectorException;
 
 /**
  * @author Robert Scholte
  * @since 3.0.0
  */
-@Component( role = WagonRepositoryConnectorFactory.class, hint = "maven3" )
+@Component( role = org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorFactory.class, hint = "maven31" )
 public class Maven31WagonRepositoryConnectorFactory
+    implements org.apache.maven.report.projectinfo.wagon.WagonRepositoryConnectorFactory
 {
-    @Requirement( role = WagonRepositoryConnectorFactory.class, hint = "wagon" )
+    private Logger logger;
+    
+    @Requirement( role = RepositoryConnectorFactory.class, hint = "wagon" )
     private WagonRepositoryConnectorFactory wrcf;
 
     public Maven31WagonRepositoryConnector newInstance( ProjectBuildingRequest request, ArtifactRepository repository )
@@ -53,7 +58,11 @@ public class Maven31WagonRepositoryConnectorFactory
 
             RepositoryConnector repoConnector = wrcf.newInstance( session, remoteRepository );
 
-            return new Maven31WagonRepositoryConnector( repoConnector );
+            Maven31WagonRepositoryConnector connector = new Maven31WagonRepositoryConnector( repoConnector );
+
+            connector.enableLogging( logger );
+
+            return connector; 
         }
         catch ( NoRepositoryConnectorException e )
         {
@@ -89,5 +98,11 @@ public class Maven31WagonRepositoryConnectorFactory
         }
 
         return aetherRepo;
+    }
+    
+    @Override
+    public void enableLogging( Logger logger )
+    {
+        this.logger = logger;
     }
 }

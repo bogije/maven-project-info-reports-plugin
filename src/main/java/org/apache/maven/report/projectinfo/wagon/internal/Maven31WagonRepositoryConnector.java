@@ -39,8 +39,6 @@ import org.eclipse.aether.spi.connector.RepositoryConnector;
  */
 class Maven31WagonRepositoryConnector implements WagonRepositoryConnector, LogEnabled
 {
-    private Logger logger;
-    
     private Wagon wagon;
     
     Maven31WagonRepositoryConnector( RepositoryConnector connector )
@@ -50,17 +48,10 @@ class Maven31WagonRepositoryConnector implements WagonRepositoryConnector, LogEn
         try
         {
             pollWagonMethod = connector.getClass().getDeclaredMethod( "pollWagon" );
+            pollWagonMethod.setAccessible( true );
             wagon = (Wagon) pollWagonMethod.invoke( connector );
             
             wagon.setTimeout( 1000 );
-
-            if ( logger.isDebugEnabled() )
-            {
-                Debug debug = new Debug();
-
-                wagon.addSessionListener( debug );
-                wagon.addTransferListener( debug );
-            }
         }
         catch ( NoSuchMethodException e )
         {
@@ -109,6 +100,12 @@ class Maven31WagonRepositoryConnector implements WagonRepositoryConnector, LogEn
     @Override
     public void enableLogging( Logger logger )
     {
-        this.logger = logger;
+        if ( logger.isDebugEnabled() )
+        {
+            Debug debug = new Debug();
+
+            wagon.addSessionListener( debug );
+            wagon.addTransferListener( debug );
+        }
     }
 }
