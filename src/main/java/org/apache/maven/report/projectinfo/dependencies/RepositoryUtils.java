@@ -25,12 +25,8 @@ import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
-import org.apache.maven.artifact.metadata.ArtifactMetadata;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.RepositoryMetadataManager;
-import org.apache.maven.artifact.repository.metadata.SnapshotArtifactRepositoryMetadata;
-import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
@@ -265,30 +261,6 @@ public class RepositoryUtils
                     catch ( ArtifactResolverException e )
                     {
                         log.error( "Artifact: " + artifact.getId() + " could not be resolved." );
-                    }
-                }
-
-                for ( ArtifactMetadata m : artifact.getMetadataList() )
-                {
-                    if ( m instanceof SnapshotArtifactRepositoryMetadata )
-                    {
-                        SnapshotArtifactRepositoryMetadata snapshotMetadata = (SnapshotArtifactRepositoryMetadata) m;
-
-                        Metadata metadata = snapshotMetadata.getMetadata();
-                        Versioning versioning = metadata.getVersioning();
-                        if ( versioning == null || versioning.getSnapshot() == null
-                            || versioning.getSnapshot().isLocalCopy()
-                            || versioning.getSnapshot().getTimestamp() == null )
-                        {
-                            continue;
-                        }
-
-                        // create the version according SnapshotTransformation
-                        String version =
-                            StringUtils.replace( copyArtifact.getVersion(), Artifact.SNAPSHOT_VERSION,
-                                                 versioning.getSnapshot().getTimestamp() )
-                                + "-" + versioning.getSnapshot().getBuildNumber();
-                        copyArtifact.setVersion( version );
                     }
                 }
             }
