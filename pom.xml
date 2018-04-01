@@ -503,9 +503,14 @@ under the License.
                   <include>*:aether-connector-wagon</include>
                 </includes>
               </artifactSet>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer"/>
-              </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/sisu/javax.inject.Named</exclude> <!-- confuses Plexus -->
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>
@@ -616,12 +621,16 @@ under the License.
     </profile>
     <profile>
       <id>run-its</id>
+      <properties>
+        <maven.invoker.failure.ignore>false</maven.invoker.failure.ignore>
+      </properties>
       <build>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-invoker-plugin</artifactId>
             <configuration>
+              <ignoreFailures>${maven.invoker.failure.ignore}</ignoreFailures>
               <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
               <pomIncludes>
                 <pomInclude>*/pom.xml</pomInclude>
